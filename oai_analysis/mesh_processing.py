@@ -19,6 +19,7 @@ import trimesh
 import vtk
 from vtk.util import numpy_support as ns
 from sklearn.decomposition import PCA
+import itkwasm_sub_mesh
 
 # Helper Functions for Mesh Processing
 
@@ -194,7 +195,23 @@ def get_vtk_sub_mesh(input_mesh, inner_face_list):
 
 # Create a Mesh by selecting relevant faces only
 def get_itk_sub_mesh(input_mesh: itk.Mesh, inner_face_list: np.ndarray):
-    trimesh_mesh = get_trimesh(input_mesh)
+    from itkwasm import Mesh
+    from dataclasses import asdict
+
+    import itk
+    import itkwasm_mesh_io
+    itk.meshwrite(input_mesh, "/tmp/itk_input_mesh.vtk")
+    input_mesh_dict = itk.dict_from_mesh(input_mesh)
+    wasm_input_mesh = Mesh(**input_mesh_dict)
+    itkwasm_mesh_io.meshwrite(wasm_input_mesh, "/tmp/itkwasm_input_mesh.vtk")
+    itk.meshwrite(itk.mesh_from_dict(asdict(wasm_input_mesh)), "/tmp/itk_input_mesh_dict.vtk")
+    wasm_sub_mesh = itkwasm_sub_mesh.sub_mesh(wasm_input_mesh, inner_face_list)
+    # wasm_sub_mesh.meshType.cellComponentType = 'uint64'
+    # wasm_sub_mesh.cells = wasm_sub_mesh.cells.astype(np.uint64)
+    print(wasm_sub_mesh)
+    itkwasm_mesh_io.meshwrite(wasm_sub_mesh, "/tmp/wasm_sub_mesh.vtk")
+    itk_sub_mesh = itk.mesh_from_dict(asdict(wasm_sub_mesh))
+    return itk_sub_mesh
 
 
 # For splitting the Tibial cartilage
@@ -221,8 +238,8 @@ def split_tibial_cartilage_surface(mesh, mesh_normals, mesh_centroids):
     inner_face_list = np.where(inner_outer_label_list == -1)[0]
     outer_face_list = np.where(inner_outer_label_list == 1)[0]
 
-    inner_mesh = get_vtk_sub_mesh(mesh, inner_face_list)
-    outer_mesh = get_vtk_sub_mesh(mesh, outer_face_list)
+    inner_mesh = get_itk_sub_mesh(mesh, inner_face_list)
+    outer_mesh = get_itk_sub_mesh(mesh, outer_face_list)
 
     return inner_mesh, outer_mesh, inner_face_list, outer_face_list
 
@@ -294,8 +311,8 @@ def split_femoral_cartilage_surface(mesh, face_normal, face_centroid, num_divisi
     inner_face_list = np.where(inner_outer_label_list == -1)[0]
     outer_face_list = np.where(inner_outer_label_list == 1)[0]
 
-    inner_mesh = get_vtk_sub_mesh(mesh, inner_face_list)
-    outer_mesh = get_vtk_sub_mesh(mesh, outer_face_list)
+    inner_mesh = get_itk_sub_mesh(mesh, inner_face_list)
+    outer_mesh = get_itk_sub_mesh(mesh, outer_face_list)
 
     return inner_mesh, outer_mesh, inner_face_list, outer_face_list
 

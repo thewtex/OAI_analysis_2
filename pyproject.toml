@@ -30,6 +30,7 @@ dependencies = [
   "torch",
   "itk == 5.4.*",
   "itk-cuberille >= 2.7.0",
+  "itkwasm-sub-mesh",
   "trimesh",
   "vtk",
   "icon_registration==0.3.4",

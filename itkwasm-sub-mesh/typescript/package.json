@@ -1,6 +1,6 @@
 {
   "name": "@itk-wasm/sub-mesh",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Extract a subset of a mesh given by the cell identifiers.",
   "type": "module",
   "module": "./dist/index.js",

@@ -160,7 +160,38 @@ int subMesh(itk::wasm::Pipeline &pipeline, const TMesh *mesh)
   }
 
   ITK_WASM_CATCH_EXCEPTION(pipeline, meshSource->Update());
-  typename MeshType::ConstPointer result = meshSource->GetOutput();
+  typename MeshType::ConstPointer fullTopology = meshSource->GetOutput();
+
+  // Only copy the triangle, quadrilateral, tetrahedron, and polygon cells.
+  // The vertex and line cells are not used, and there are line cells with 0 points, which causes issues with other sofware.
+  typename MeshType::Pointer result = MeshType::New();
+  // re-use
+  result->SetPoints(const_cast<typename MeshType::PointsContainer *>(fullTopology->GetPoints()));
+  using CellIterator = MeshType::CellsContainer::ConstIterator;
+  CellIterator cellIterator = fullTopology->GetCells()->Begin();
+  CellIterator cellEnd = fullTopology->GetCells()->End();
+  itk::IdentifierType cellId = 0;
+  while (cellIterator != cellEnd)
+  {
+    CellType * cell = cellIterator.Value();
+    switch (cell->GetType())
+    {
+      case CellGeometryEnum::VERTEX_CELL:
+      case CellGeometryEnum::LINE_CELL:
+      {
+        break;
+      }
+      default:
+      {
+        typename CellType::CellAutoPointer newCell;
+        cell->MakeCopy(newCell);
+        result->SetCell(cellId, newCell);
+        cellId++;
+        break;
+      }
+    }
+    ++cellIterator;
+  }
   subMesh.Set(result);
 
   return EXIT_SUCCESS;

@@ -119,21 +119,25 @@ def test_split_femoral_cartilage_surface():
     inner_mesh, outer_mesh, inner_face_list, outer_face_list = \
         mp.split_femoral_cartilage_surface(itk_mesh, mesh_cell_normals, mesh_cell_centroids)
 
+    itk.meshwrite(inner_mesh, "/tmp/itk_inner_mesh.vtk")
+    itk.meshwrite(outer_mesh, "/tmp/itk_outer_mesh.vtk")
     baseline_mesh_filepath = data_dir() / "colab_case" / "TC_mesh_femoral_cartilage_inner_surface.vtk"
-    import vtk
-    writer = vtk.vtkPolyDataWriter()
-    writer.SetInputData(inner_mesh)
-    writer.SetFileName(baseline_mesh_filepath)
-    writer.Write()
+    print(baseline_mesh_filepath)
+    # import vtk
+    # writer = vtk.vtkPolyDataWriter()
+    # writer.SetInputData(inner_mesh)
+    # writer.SetFileName(baseline_mesh_filepath)
+    # writer.Write()
  
     baseline_mesh_filepath = data_dir() / "colab_case" / "TC_mesh_femoral_cartilage_outer_surface.vtk"
-    import vtk
-    writer = vtk.vtkPolyDataWriter()
-    writer.SetInputData(outer_mesh)
-    writer.SetFileName(baseline_mesh_filepath)
-    writer.Write()
+    print(baseline_mesh_filepath)
+    # import vtk
+    # writer = vtk.vtkPolyDataWriter()
+    # writer.SetInputData(outer_mesh)
+    # writer.SetFileName(baseline_mesh_filepath)
+    # writer.Write()
 
-    print(vtk_mesh)
-    print(itk_mesh)
-    print(inner_mesh)
-    print(inner_face_list)
+    # print(vtk_mesh)
+    # print(itk_mesh)
+    # print(inner_mesh)
+    # print(inner_face_list)
